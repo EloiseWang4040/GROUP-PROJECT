@@ -11,13 +11,17 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.demodemo",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
-        "googleServicesFile": "./google-services.json"
+        "googleServicesFile": "./google-services.json",
+        "permissions": ["CAMERA"]
       },
       "package": "com.anonymous.demodemo"
     },
