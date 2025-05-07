@@ -1,6 +1,6 @@
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
-import { Text, Button, View, StyleSheet, ViewStyle, TextStyle, ImageStyle } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Text, Button, View, StyleSheet, ViewStyle, TextStyle, ImageStyle, TouchableOpacity, Image } from 'react-native';
+import { useRouter} from 'expo-router';
 
 export default function HomeScreen() {
     const { user, logout } = useFirebaseAuth();
@@ -27,6 +27,27 @@ export default function HomeScreen() {
             ) : (
                 <Text>Not logged in</Text>
             )}
+            {/* ↓ メニューバー */}
+            <View style={styles.menuBar}>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => router.push('/(tabs)/memories')}
+                >
+                    <Image source={require('../../assets/images/calendar.png')} style={styles.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => router.push('/(tabs)/camera')}
+                >
+                    <Image source={require('../../assets/images/camera.png')} style={styles.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => router.push('/(tabs)/setting')}
+                >
+                    <Image source={require('../../assets/images/settings.png')} style={styles.icon} />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
