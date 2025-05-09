@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 import { useRouter } from 'expo-router';
+import { showAlert } from '@/utils/alert';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -32,8 +33,18 @@ export default function LoginScreen() {
                 placeholder="Password"
                 secureTextEntry
             />
-            <Button title="Register" onPress={() => register(email, password)} />
-            <Button title="Login" onPress={() => signIn(email, password)} />
+            <Button title="Register" onPress={async() => {
+                const result = await register(email, password);
+                if (!result.success) {
+                    showAlert('Register エラー', result.message)
+                }
+            }} />
+            <Button title="Login" onPress={async() => {
+                const result = await signIn(email, password);
+                if (!result.success) {
+                    showAlert('Sign in エラー', result.message)
+                }
+            }}/>
         </View>
     );
 }

@@ -17,8 +17,10 @@ export function useFirebaseAuth() {
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
             setUser(cred.user);
+            return { success: true };
         } catch (e: any) {
             console.error("Register error:", e.message);
+            return { success: false, message: e.message };
         }
     };
 
@@ -27,8 +29,10 @@ export function useFirebaseAuth() {
         try {
             const cred = await signInWithEmailAndPassword(auth, email, password);
             setUser(cred.user);
+            return { success: true };
         } catch (e: any) {
             console.error("SignIn error:", e.message);
+            return { success: false, message: e.message };
         }
     };
 
@@ -37,8 +41,10 @@ export function useFirebaseAuth() {
         try {
             await signOut(auth);
             setUser(null);
+            return { success: true };
         } catch (e: any) {
             console.error("SignOut error:", e.message);
+            return { success: false, message: e.message };
         }
     };
 
