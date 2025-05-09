@@ -1,9 +1,10 @@
 // app/(tabs)/index.tsx
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 import { useRouter } from 'expo-router';
 import { showAlert } from '@/utils/alert';
+import { Button, TextInput } from 'react-native-paper';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
@@ -19,32 +20,50 @@ export default function LoginScreen() {
 
     return (
         <View style={styles.container}>
-            <Text>Welcome!</Text>
+            <Text style={styles.title}>Welcome!</Text>
             <TextInput
+                mode="outlined"
                 style={styles.input}
                 value={email}
                 onChangeText={setEmail}
-                placeholder="Email"
+                label="Email"
+                keyboardType="email-address"
+                autoCapitalize="none"
             />
             <TextInput
+                mode="outlined"
                 style={styles.input}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Password"
+                label="Password"
                 secureTextEntry
             />
-            <Button title="Register" onPress={async() => {
-                const result = await register(email, password);
-                if (!result.success) {
-                    showAlert('Register エラー', result.message)
-                }
-            }} />
-            <Button title="Login" onPress={async() => {
-                const result = await signIn(email, password);
-                if (!result.success) {
-                    showAlert('Sign in エラー', result.message)
-                }
-            }}/>
+            <Button 
+                mode="contained" 
+                style={styles.button} 
+                contentStyle={styles.buttonContent}
+                onPress={async () => {
+                    const result = await register(email, password);
+                    if (!result.success) {
+                        showAlert('Register エラー', result.message);
+                    }
+                }}
+            >
+                Register
+            </Button>
+            <Button 
+                mode="contained" 
+                style={styles.button} 
+                contentStyle={styles.buttonContent}
+                onPress={async () => {
+                    const result = await signIn(email, password);
+                    if (!result.success) {
+                        showAlert('Sign in エラー', result.message);
+                    }
+                }}
+            >
+                Sign In
+            </Button>
         </View>
     );
 }
@@ -55,11 +74,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5FCFF',
         alignItems: 'center',
         justifyContent: 'center',
+        paddingHorizontal: 30,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 40,
+        color: '#333',
     },
     input: {
-        height: 40,
-        margin: 8,
-        borderWidth: 1,
-        padding: 10,
+        width: '100%',
+        marginBottom: 20,
+        backgroundColor: 'white',
+    },
+    button: {
+        width: '100%',
+        marginBottom: 15,
+        borderRadius: 8,
+    },
+    buttonContent: {
+        paddingVertical: 10,
     },
 });
