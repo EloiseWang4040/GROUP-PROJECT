@@ -2,11 +2,15 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextStyle, ViewStyle } from 'react-native';
 import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import type { CameraRatio } from 'expo-camera';
+import { useRouter } from 'expo-router';
+import { uploadImage } from '../lib/uploadImage';
 
 export default function CameraScreen() {
     const cameraRef = useRef<any>(null);
     const [hasPermission, requestPermission] = useCameraPermissions();
     const [ratio, setRatio] = useState<CameraRatio>('4:3');
+    const [photoUri, setPhotoUri] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (!hasPermission) requestPermission();
@@ -24,6 +28,15 @@ export default function CameraScreen() {
             }
         })();
     }, [cameraRef]);
+
+    const handleUpload = async () => {
+        if (photoUri) {
+            const result = await uploadImage(photoUri);
+            console.log('アップロードURL:', result.imageUrl);
+        } else {
+            console.warn('先に写真を撮影してください');
+        }
+    };
 
     if (!hasPermission) {
         return (
@@ -46,12 +59,20 @@ export default function CameraScreen() {
                         onPress={async () => {
                             if (cameraRef.current) {
                                 const photo: CameraCapturedPicture = await cameraRef.current.takePictureAsync();
-                                console.log(photo.uri);
+                                setPhotoUri(photo.uri);
                             }
                         }}
                     >
                         <Text style={styles.buttonText}>Capture</Text>
                     </TouchableOpacity>
+                    {photoUri && (
+                        <TouchableOpacity
+                            style={[styles.cameraButton, { marginTop: 10, backgroundColor: '#4caf50' }]}
+                            onPress={handleUpload}
+                        >
+                            <Text style={styles.buttonText}>Upload</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </CameraView>
         </View>
