@@ -44,3 +44,6 @@ web-build/
 
 android/
 ios/
+
+# JetBrains
+.idea/
