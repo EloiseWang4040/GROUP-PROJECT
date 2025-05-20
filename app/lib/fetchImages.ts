@@ -1,15 +1,21 @@
 import { listAll, ref, getDownloadURL, getMetadata } from 'firebase/storage';
-import { storage } from "@/firebaseConfig"; // Firebaseの初期化ファイルへのパス
+import { storage } from "@/firebaseConfig";
+import { auth } from "@/firebaseConfig"; // Firebase Auth をインポート
 
 export interface ImageInfo {
     name: string;
     url: string;
-    uploadedAt: string; // 仮の値
+    uploadedAt: string;
 }
 
 export async function fetchImages(): Promise<ImageInfo[]> {
     try {
-        const storageRef = ref(storage, 'uploads');
+        const user = auth.currentUser; // 現在ログイン中のユーザーを取得
+        if (!user) {
+            throw new Error('ユーザーが認証されていません');
+        }
+
+        const storageRef = ref(storage, `uploads/${user.uid}`); // ユーザーIDをパスに含める
         const result = await listAll(storageRef);
 
         const images: ImageInfo[] = await Promise.all(
@@ -19,7 +25,7 @@ export async function fetchImages(): Promise<ImageInfo[]> {
                 return {
                     name: item.name,
                     url,
-                    uploadedAt: metadata.timeCreated,// 仮の値
+                    uploadedAt: metadata.timeCreated,
                 };
             })
         );
