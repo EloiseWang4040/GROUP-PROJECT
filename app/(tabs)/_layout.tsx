@@ -7,6 +7,7 @@ export default function TabsLayout() {
             <Tabs.Screen name="camera" options={{ title: 'camera' }} />
             <Tabs.Screen name="memories" options={{ title: 'memories' }} />
             <Tabs.Screen name="setting" options={{ title: 'setting' }} />
+            <Tabs.Screen name="game" options={{ title: 'game' }} />
             {/* 他にもタブがあればここに追加 */}
         </Tabs>
     );

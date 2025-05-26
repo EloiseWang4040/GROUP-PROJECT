@@ -42,6 +42,12 @@ export default function HomeScreen() {
                     <Image source={require('../../assets/images/camera.png')} style={styles.icon} />
                 </TouchableOpacity>
                 <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={() => router.push('/(tabs)/game')}
+                >
+                    <Image source={require('../../assets/images/react-logo.png')} style={styles.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity
                     style={styles.iconButton}
                     onPress={() => router.push('/(tabs)/setting')}
                 >
