@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextStyle, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextStyle, ViewStyle, Alert } from 'react-native';
 import { CameraView, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import type { CameraRatio } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { uploadImage } from '../lib/uploadImage';
+import { uploadImageAndGetURL, analyzeAndSaveImage } from '../lib/firebase';
+import { auth } from '../../firebaseConfig';
 
 export default function CameraScreen() {
     const cameraRef = useRef<any>(null);
@@ -11,6 +12,7 @@ export default function CameraScreen() {
     const [ratio, setRatio] = useState<CameraRatio>('4:3');
     const [photoUri, setPhotoUri] = useState<string | null>(null);
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!hasPermission) requestPermission();
@@ -31,10 +33,35 @@ export default function CameraScreen() {
 
     const handleUpload = async () => {
         if (photoUri) {
-            const result = await uploadImage(photoUri);
-            console.log('アップロードURL:', result.imageUrl);
+            console.log('handleUpload started with photoUri:', photoUri);
+            try {
+                setIsLoading(true);
+                const userId = auth.currentUser?.uid;
+                if (!userId) {
+                    console.error("User not logged in during handleUpload");
+                    throw new Error("User not logged in");
+                }
+                console.log('User ID:', userId);
+
+                console.log('Calling uploadImageAndGetURL...');
+                const downloadURL = await uploadImageAndGetURL(photoUri, userId);
+                console.log('uploadImageAndGetURL success. Download URL:', downloadURL);
+
+                console.log('Calling analyzeAndSaveImage with URL:', downloadURL);
+                await analyzeAndSaveImage(downloadURL, userId);
+                console.log('analyzeAndSaveImage call finished.');
+
+                Alert.alert("Success", "Image uploaded and analyzed!");
+                router.push({ pathname: '/(tabs)/memories', params: { reload: Date.now().toString() } });
+            } catch (error) {
+                console.error("Error in handleUpload: ", error);
+                Alert.alert("Error", "Could not process image.");
+            } finally {
+                setIsLoading(false);
+                console.log('handleUpload finished.');
+            }
         } else {
-            console.warn('先に写真を撮影してください');
+            console.warn('photoUri is null, handleUpload cannot proceed.');
         }
     };
 
