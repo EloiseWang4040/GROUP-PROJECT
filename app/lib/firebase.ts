@@ -5,10 +5,6 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import uuid from 'react-native-uuid';
 
-// Firebase初期化は既存のfirebaseConfig.tsで行われているため、
-// ここでは必要な関数のみを追加
-
-// Functionsのインスタンスを取得
 const functions = getFunctions();
 
 if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
@@ -29,7 +25,7 @@ if (process.env.NODE_ENV === 'development' || window.location.hostname === 'loca
 //     }
 // };
 
-// 画像をStorageにアップロードし、ダウンロードURLを返す関数 (既存のものを想定)
+// Upload the image to Storage and return the download URL
 export async function uploadImageAndGetURL(imageUri: string, userId: string): Promise<string> {
     const user = auth.currentUser;
         if (!user) {
@@ -44,14 +40,14 @@ export async function uploadImageAndGetURL(imageUri: string, userId: string): Pr
     return downloadURL;
 }
 
-// 画像を解析し、結果と画像情報をFirestoreに保存する関数 (新規作成)
+// Analyze the image and save the result and image information to Firestore
 export async function analyzeAndSaveImage(
     imageUrl: string,
-    userId: string // ユーザーIDも保存する場合
+    userId: string 
 ): Promise<void> {
     console.log('analyzeAndSaveImage started with URL:', imageUrl, 'and userId:', userId);
     try {
-        const functionsInstance = getFunctions(); // functionsインスタンスを取得
+        const functionsInstance = getFunctions(); 
         const analyzeImageFunction = httpsCallable(functionsInstance, 'analyzeImage');
 
         const analysisResult = await analyzeImageFunction({ imageUrl });
@@ -61,19 +57,19 @@ export async function analyzeAndSaveImage(
             throw new Error('AI analysis did not return expected data.');
         }
 
-        // Firestoreに保存
-        await addDoc(collection(db, 'userImages'), { // 'userImages' はコレクション名（適宜変更）
+        // Save the result and image information to Firestore
+        await addDoc(collection(db, 'userImages'), { // 'userImages' is the collection name (change as needed)
             userId: userId,
             imageUrl: imageUrl,
             description: data.description,
             tags: data.possibleItems,
-            createdAt: serverTimestamp(), // サーバー側のタイムスタンプを利用
+            createdAt: serverTimestamp(), // Use the server-side timestamp
         });
         console.log('Image and analysis saved to Firestore');
 
     } catch (error) {
         console.error('Error in analyzeAndSaveImage:', error);
-        throw error; // エラーを呼び出し元に伝える
+        throw error; // Pass the error to the caller
     }
     console.log('analyzeAndSaveImage finished');
 }

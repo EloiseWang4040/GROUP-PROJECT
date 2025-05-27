@@ -1,9 +1,9 @@
 // firebaseConfig.ts
 import { initializeApp } from 'firebase/app';
 import { getAuth} from "firebase/auth";
-import { getStorage } from 'firebase/storage';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { Platform } from 'react-native';
 const firebaseConfig = {
     apiKey: "AIzaSyAimHxm2q0NXvq7YNdNYrqh8iMcp4ihmQU",
@@ -36,8 +36,11 @@ const functions = isLocal
 
 // ローカル環境の場合、エミュレータに接続
 if (isLocal) {
-    connectFunctionsEmulator(functions, "localhost", 5001);
-    console.log("✅ Functions エミュレータに接続しました (localhost:5001)");
+    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+    console.log("✅ Functions エミュレータに接続しました (127.0.0.1:5001)");
+
+    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+    console.log("✅ Firestore エミュレータに接続しました (127.0.0.1:8080)");
 }
 
 export { auth, storage, db, functions };
