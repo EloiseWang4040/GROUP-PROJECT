@@ -5,18 +5,6 @@ export default function TabsLayout() {
     return (
         <Tabs>
             <Tabs.Screen
-            name="home"
-            options={{
-                title: 'Home',
-                tabBarIcon: ({ focused, color, size }) => (
-                <Image
-                    source={require('../../assets/images/home.png')} // homeアイコンがあれば
-                    style={{ width: size, height: size, tintColor: color }}
-                />
-                ),
-            }}
-            />
-            <Tabs.Screen
             name="memories"
             options={{
                 title: 'memories',

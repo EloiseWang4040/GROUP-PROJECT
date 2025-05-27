@@ -14,7 +14,7 @@ export default function LoginScreen() {
 
     useEffect(() => {
         if (user) {
-            router.replace('/home');
+            router.replace('/camera');
         }
     }, [user]);
 
