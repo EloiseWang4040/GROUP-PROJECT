@@ -4,6 +4,7 @@ import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 import { Text, Button, View, StyleSheet, ViewStyle, TextStyle, ImageStyle, TouchableOpacity, Image } from 'react-native';
 import { useRouter} from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import { AndroidImportance } from 'expo-notifications';
 
 export default function HomeScreen() {
     const { user, logout } = useFirebaseAuth();
