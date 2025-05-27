@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth} from "firebase/auth";
 import { getStorage } from 'firebase/storage';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAimHxm2q0NXvq7YNdNYrqh8iMcp4ihmQU",
@@ -19,7 +20,12 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 
 // 開発環境判定
-const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const isWeb = Platform.OS === 'web';
+
+let isLocal = false;
+if (isWeb && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+  isLocal = true;
+}
 
 // 環境に応じた functions の初期化
 const functions = isLocal
