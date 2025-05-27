@@ -19,49 +19,61 @@ export default function HomeScreen() {
     };
 
     useEffect(() => {
-        const setup = async () => {
-          const { status } = await Notifications.getPermissionsAsync();
-          if (status !== 'granted') {
-            await Notifications.requestPermissionsAsync();
-          }
-      
-          if (Platform.OS === 'android') {
-            await Notifications.setNotificationChannelAsync('daily-reminder', {
-              name: 'WordScope通知',
-              importance: Notifications.AndroidImportance.HIGH,
-              vibrationPattern: [0, 250, 250, 250],
-              lightColor: '#FF231F7C',
-            });
-          }
+        // Webプラットフォームでは通知機能をスキップ
+        if (Platform.OS === 'web') {
+            console.log('通知機能はWeb環境ではサポートされていません');
+            return;
+        }
 
-          await Notifications.setNotificationHandler({
-            handleNotification: async () => ({
-              shouldShowAlert: true,
-              shouldPlaySound: true,
-              shouldSetBadge: false,
-            }),
-          });
-      
-          await scheduleDailyNotification(); // 通知をスケジュール
+        const setup = async () => {
+            const { status } = await Notifications.getPermissionsAsync();
+            if (status !== 'granted') {
+                await Notifications.requestPermissionsAsync();
+            }
+
+            if (Platform.OS === 'android') {
+                await Notifications.setNotificationChannelAsync('daily-reminder', {
+                    name: 'WordScope通知',
+                    importance: Notifications.AndroidImportance.HIGH,
+                    vibrationPattern: [0, 250, 250, 250],
+                    lightColor: '#FF231F7C',
+                });
+            }
+
+            await Notifications.setNotificationHandler({
+                handleNotification: async () => ({
+                    shouldShowAlert: true,
+                    shouldPlaySound: true,
+                    shouldSetBadge: false,
+                }),
+            });
+
+            await scheduleDailyNotification(); // 通知をスケジュール
         };
-      
+
         setup();
-      }, []);
+    }, []);
 
     const scheduleDailyNotification = async () => {
+        // Webプラットフォームでは実行しない
+        if (Platform.OS === 'web') {
+            console.log('通知のスケジュール設定はWeb環境ではサポートされていません');
+            return;
+        }
+
         await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'おはようございます 🌞',
-            body: '今日もWordScopeで単語を記録しよう！',
-          },
-          trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DAILY,
-            hour: 10,
-            minute: 0,
-            channelId: 'daily-reminder', 
-          }
+            content: {
+                title: 'おはようございます 🌞',
+                body: '今日もWordScopeで単語を記録しよう！',
+            },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DAILY,
+                hour: 10,
+                minute: 0,
+                channelId: 'daily-reminder',
+            }
         });
-      };
+    };
 
     return (
         <View style={styles.container}>
