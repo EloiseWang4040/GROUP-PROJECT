@@ -94,33 +94,6 @@ export default function HomeScreen() {
                     <Button title="Go to login page" onPress={gohome} />
                 </>
             )}
-            {/* ↓ メニューバー */}
-            <View style={styles.menuBar}>
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => router.push('/(tabs)/memories')}
-                >
-                    <Image source={require('../../assets/images/calendar.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => router.push('/(tabs)/camera')}
-                >
-                    <Image source={require('../../assets/images/camera.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => router.push('/(tabs)/game')}
-                >
-                    <Image source={require('../../assets/images/react-logo.png')} style={styles.icon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => router.push('/(tabs)/setting')}
-                >
-                    <Image source={require('../../assets/images/settings.png')} style={styles.icon} />
-                </TouchableOpacity>
-            </View>
         </View>
     );
 }
