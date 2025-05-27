@@ -1,6 +1,6 @@
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from "@/firebaseConfig";
-import { v4 as uuidv4 } from 'uuid';
+import uuid from 'react-native-uuid';
 import { auth } from "@/firebaseConfig"; // Firebase Auth をインポート
 
 export async function uploadImage(uri: string): Promise<{ imageUrl: string }> {
@@ -12,7 +12,7 @@ export async function uploadImage(uri: string): Promise<{ imageUrl: string }> {
 
         const response = await fetch(uri);
         const blob = await response.blob();
-        const filename = `uploads/${user.uid}/${Date.now()}-${uuidv4()}.jpg`; // ユーザーIDをパスに含める
+        const filename = `uploads/${user.uid}/${Date.now()}-${uuid.v4()}.jpg`; // ユーザーIDをパスに含める
         const storageRef = ref(storage, filename);
 
         await uploadBytes(storageRef, blob);
