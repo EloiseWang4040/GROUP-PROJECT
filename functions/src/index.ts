@@ -46,7 +46,30 @@ export const analyzeImage = onCall(
                 messages: [
                     {
                         role: "system",
-                        content: "与えられた画像を分析し、日本語での詳細な説明と映っている可能性が高いものを5つ提供してください。",
+                        content: `与えられた画像を分析し、映っている可能性が高いものを3つ抽出してください。
+                                それぞれについて、初心者向けの簡単な単語で、日本語と英語のセットを教えてください。
+                                さらに、それぞれの単語に似た単語（3つずつ）も初心者向けの英語で教えてください。
+                                結果は以下の形式で返してください。
+
+                                {
+                                "possibleItems": [
+                                    {
+                                    "japanese": "犬",
+                                    "english": "dog",
+                                    "distractors": ["cat", "rabbit", "fox"]
+                                    },
+                                    {
+                                    "japanese": "ボール",
+                                    "english": "ball",
+                                     "distractors": ["bat", "frisbee", "puck"]
+                                    },
+                                    {
+                                    "japanese": "木",
+                                    "english": "tree",
+                                    "distractors": ["bush", "plant", "flower"]
+                                    }
+                                ]
+                                }`,
                     },
                     {
                         role: "user",
@@ -58,30 +81,40 @@ export const analyzeImage = onCall(
                 ],
                 tools: [
                     {
-                        type: "function",
-                        function: {
-                            name: "analyze_image",
-                            description: "画像の分析結果を構造化されたフォーマットで返す",
-                            parameters: {
+                      type: "function",
+                      function: {
+                        name: "analyze_image",
+                        description: "画像に映っている可能性が高いもの3つ（日本語＋英語の簡単単語）",
+                        parameters: {
+                          type: "object",
+                          properties: {
+                            possibleItems: {
+                              type: "array",
+                              description: "日本語＋英語の単語リスト（類似単語付き）",
+                              items: {
                                 type: "object",
                                 properties: {
-                                    description: {
-                                        type: "string",
-                                        description: "画像の詳細な説明（日本語）",
-                                    },
-                                    possibleItems: {
-                                        type: "array",
-                                        description: "画像に映っている可能性が高いもの5つ",
-                                        items: {
-                                            type: "string",
-                                        },
-                                    },
+                                  japanese: { type: "string", description: "日本語の単語" },
+                                  english: { type: "string", description: "英語の単語（簡単）" },
+                                  distractors: {
+                                    type: "array",
+                                    description: "英語の類似単語（初心者向け）",
+                                    items: { type: "string"},
+                                    minItems: 3,
+                                    maxItems: 3
+                                  }
                                 },
-                                required: ["description", "possibleItems"],
+                                required: ["japanese", "english", "distractors"]
+                              },
+                              minItems: 3,
+                              maxItems: 3,
                             },
+                          },
+                          required: ["possibleItems"],
                         },
+                      },
                     },
-                ],
+                  ],
                 tool_choice: {type: "function", function: {name: "analyze_image"}},
             });
 
