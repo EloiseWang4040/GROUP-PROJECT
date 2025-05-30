@@ -46,7 +46,17 @@ export const analyzeImage = onCall(
                 messages: [
                     {
                         role: "system",
-                        content: "与えられた画像を分析し、日本語での詳細な説明と映っている可能性が高いものを5つ提供してください。",
+                        content: `与えられた画像を分析し、映っている可能性が高いものを3つ抽出してください。
+                                それぞれについて、初心者向けの簡単な単語で、日本語と英語のセットを教えてください。
+                                結果は以下の形式で返してください。
+
+                                {
+                                "possibleItems": [
+                                    { "japanese": "犬", "english": "dog" },
+                                    { "japanese": "ボール", "english": "ball" },
+                                    { "japanese": "木", "english": "tree" }
+                                ]
+                                }`,
                     },
                     {
                         role: "user",
@@ -58,30 +68,33 @@ export const analyzeImage = onCall(
                 ],
                 tools: [
                     {
-                        type: "function",
-                        function: {
-                            name: "analyze_image",
-                            description: "画像の分析結果を構造化されたフォーマットで返す",
-                            parameters: {
+                      type: "function",
+                      function: {
+                        name: "analyze_image",
+                        description: "画像に映っている可能性が高いもの3つ（日本語＋英語の簡単単語）",
+                        parameters: {
+                          type: "object",
+                          properties: {
+                            possibleItems: {
+                              type: "array",
+                              description: "日本語＋英語の単語リスト",
+                              items: {
                                 type: "object",
                                 properties: {
-                                    description: {
-                                        type: "string",
-                                        description: "画像の詳細な説明（日本語）",
-                                    },
-                                    possibleItems: {
-                                        type: "array",
-                                        description: "画像に映っている可能性が高いもの5つ",
-                                        items: {
-                                            type: "string",
-                                        },
-                                    },
+                                  japanese: { type: "string", description: "日本語の単語" },
+                                  english: { type: "string", description: "英語の単語（簡単）" },
                                 },
-                                required: ["description", "possibleItems"],
+                                required: ["japanese", "english"],
+                              },
+                              minItems: 3,
+                              maxItems: 3,
                             },
+                          },
+                          required: ["possibleItems"],
                         },
+                      },
                     },
-                ],
+                  ],
                 tool_choice: {type: "function", function: {name: "analyze_image"}},
             });
 
