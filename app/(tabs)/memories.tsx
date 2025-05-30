@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { collection, query, orderBy, onSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, DocumentData } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'; // FirestoreインスタンスとAuthインスタンスをインポート
 
 const { width } = Dimensions.get('window');
@@ -32,7 +32,11 @@ export default function MemoriesScreen() {
 
         setIsLoading(true);
         // userImages コレクションから現在のユーザーの画像を取得し、createdAtで降順ソート
-        const q = query(collection(db, "userImages"), orderBy("createdAt", "desc"));
+        const q = query(
+            collection(db, "userImages"),
+            where("userId", "==", currentUserId), // 現在のユーザーIDでフィルタリング
+            orderBy("createdAt", "desc")
+        );
         // where("userId", "==", currentUserId) を追加してユーザーごとの画像にする場合はインデックス設定が必要
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -46,7 +50,6 @@ export default function MemoriesScreen() {
             console.error("Error fetching images from Firestore: ", error);
             setIsLoading(false);
         });
-
         return () => unsubscribe(); // クリーンアップ
     }, [currentUserId, reload]); // currentUserIdやreloadが変わった時に再取得
 
@@ -75,7 +78,7 @@ export default function MemoriesScreen() {
     }
 
     if (!currentUserId) {
-         return <View style={styles.centered}><Text>Please log in to see your memories.</Text></View>;
+         return <View style={styles.centered}><Text>Please login to see your memories.</Text></View>;
     }
     
     if (images.length === 0) {
@@ -88,7 +91,7 @@ export default function MemoriesScreen() {
             <FlatList
                 data={images}
                 keyExtractor={(item) => item.id} // FirestoreドキュメントIDをキーに
-                numColumns={2}
+                numColumns={1}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
             />
