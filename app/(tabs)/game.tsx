@@ -1,5 +1,5 @@
 // ImageWordQuiz.tsx
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -7,17 +7,78 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  ActivityIndicator
 } from 'react-native'
-import quizData from '../../assets/quiz.json'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { db, auth } from '../../firebaseConfig';
 
-export default function GameScreen () {
+interface FirestoreImageInfo {
+  id: string; // FirestoreドキュメントID
+  imageUrl: string;
+  tags: { english: string; distractors: string[]; }[];
+  createdAt?: any; // Timestampなど
+  // userId?: string; // 必要であれば
+}
+
+interface QuizItem {
+  img: string
+  words: string[]
+  answer: string
+}
+
+export default function GameScreen () {  
   const [currentIndex, setCurrentIndex] = useState(0)
   const [score, setScore] = useState(0)
+  const [quizData, setQuizData] = useState<QuizItem[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  const shuffle = <T,>(array: T[]): T[] => {
+    const result = [...array]
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[result[i], result[j]] = [result[j], result[i]]
+    }
+    return result
+  }
+  
+  useEffect(() => {
+    const fetchImages = async () => {
+      const currentUserId = auth.currentUser?.uid
+      if (!currentUserId) return
+  
+      const q = query(
+        collection(db, 'userImages'),
+        where('userId', '==', currentUserId)
+      )
+      const snapshot = await getDocs(q)
+  
+      const images: FirestoreImageInfo[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as FirestoreImageInfo[]
+  
+      const quizzes = generateQuizData(images)
+      setQuizData(quizzes)
+      setLoading(false)
+    }
+    fetchImages()
+  }, [])
+
+
+  const generateQuizData = (userImages: FirestoreImageInfo[]): QuizItem[] => {
+    return userImages.flatMap(image =>
+      image.tags.map(tag => ({
+        img: image.imageUrl,
+        words: shuffle([tag.english, ...(tag.distractors || [])]).slice(0, 4),
+        answer: tag.english,
+      }))
+    )
+  }
 
   const handleSelect = (word: string) => {
     const correct = quizData[currentIndex].answer
     if (word === correct) {
-      setScore(score + 10)
+      setScore(score + 30)
     }
     setCurrentIndex(currentIndex + 1)
   }
@@ -25,6 +86,10 @@ export default function GameScreen () {
   const restart = () => {
     setCurrentIndex(0)
     setScore(0)
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" />
   }
 
   if (currentIndex >= quizData.length) {

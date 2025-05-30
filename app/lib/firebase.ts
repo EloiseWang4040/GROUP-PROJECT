@@ -53,7 +53,7 @@ export async function analyzeAndSaveImage(
         const analysisResult = await analyzeImageFunction({ imageUrl });
         const data = analysisResult.data as {
             description: string;
-            possibleItems: { japanese: string; english: string }[]; // 配列の要素は日本語と英語のペアのオブジェクトにするなら
+            possibleItems: { japanese: string; english: string; distractors: string[]; }[]; // 配列の要素は日本語と英語のペアのオブジェクトにするなら
           };
 
         if (!data.description || !data.possibleItems) {
@@ -68,6 +68,7 @@ export async function analyzeAndSaveImage(
             tags: data.possibleItems.map(item => ({
                 english: item.english,
                 japanese: item.japanese,
+                distractors: item.distractors,
               })),
             createdAt: serverTimestamp(), // Use the server-side timestamp
         });

@@ -48,13 +48,26 @@ export const analyzeImage = onCall(
                         role: "system",
                         content: `与えられた画像を分析し、映っている可能性が高いものを3つ抽出してください。
                                 それぞれについて、初心者向けの簡単な単語で、日本語と英語のセットを教えてください。
+                                さらに、それぞれの単語に似た単語（3つずつ）も初心者向けの英語で教えてください。
                                 結果は以下の形式で返してください。
 
                                 {
                                 "possibleItems": [
-                                    { "japanese": "犬", "english": "dog" },
-                                    { "japanese": "ボール", "english": "ball" },
-                                    { "japanese": "木", "english": "tree" }
+                                    {
+                                    "japanese": "犬",
+                                    "english": "dog",
+                                    "distractors": ["cat", "rabbit", "fox"]
+                                    },
+                                    {
+                                    "japanese": "ボール",
+                                    "english": "ball",
+                                     "distractors": ["bat", "frisbee", "puck"]
+                                    },
+                                    {
+                                    "japanese": "木",
+                                    "english": "tree",
+                                    "distractors": ["bush", "plant", "flower"]
+                                    }
                                 ]
                                 }`,
                     },
@@ -77,14 +90,21 @@ export const analyzeImage = onCall(
                           properties: {
                             possibleItems: {
                               type: "array",
-                              description: "日本語＋英語の単語リスト",
+                              description: "日本語＋英語の単語リスト（類似単語付き）",
                               items: {
                                 type: "object",
                                 properties: {
                                   japanese: { type: "string", description: "日本語の単語" },
                                   english: { type: "string", description: "英語の単語（簡単）" },
+                                  distractors: {
+                                    type: "array",
+                                    description: "英語の類似単語（初心者向け）",
+                                    items: { type: "string"},
+                                    minItems: 3,
+                                    maxItems: 3
+                                  }
                                 },
-                                required: ["japanese", "english"],
+                                required: ["japanese", "english", "distractors"]
                               },
                               minItems: 3,
                               maxItems: 3,
