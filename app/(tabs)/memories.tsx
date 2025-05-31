@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { collection, query, orderBy, onSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, DocumentData } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'; // FirestoreインスタンスとAuthインスタンスをインポート
+import { format } from "date-fns";
 
 const { width } = Dimensions.get('window');
 const imageSize = width / 2 - 16;
+function formatDate(timestamp: any) {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return format(date, "yy/MM/dd");
+  }
 
 interface FirestoreImageInfo {
     id: string; // FirestoreドキュメントID
     imageUrl: string;
-    description: string;
-    tags: string[];
+    tags: { japanese: string; english: string }[];
     createdAt?: any; // Timestampなど
     // userId?: string; // 必要であれば
 }
@@ -32,7 +36,11 @@ export default function MemoriesScreen() {
 
         setIsLoading(true);
         // userImages コレクションから現在のユーザーの画像を取得し、createdAtで降順ソート
-        const q = query(collection(db, "userImages"), orderBy("createdAt", "desc"));
+        const q = query(
+            collection(db, "userImages"),
+            where("userId", "==", currentUserId), // 現在のユーザーIDでフィルタリング
+            orderBy("createdAt", "desc")
+        );
         // where("userId", "==", currentUserId) を追加してユーザーごとの画像にする場合はインデックス設定が必要
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -46,26 +54,20 @@ export default function MemoriesScreen() {
             console.error("Error fetching images from Firestore: ", error);
             setIsLoading(false);
         });
-
         return () => unsubscribe(); // クリーンアップ
     }, [currentUserId, reload]); // currentUserIdやreloadが変わった時に再取得
 
     const renderItem = ({ item }: { item: FirestoreImageInfo }) => (
-        <View style={styles.imageContainer}>
-            <Image source={{ uri: item.imageUrl }} style={styles.image} />
-            <View style={styles.captionContainer}>
-                <Text style={styles.captionText} numberOfLines={2}>
-                    {item.description || '説明なし'}
-                </Text>
-                {item.tags && item.tags.length > 0 && (
-                    <View style={styles.tagsContainer}>
-                        {item.tags.map((tag, index) => (
-                            <View key={index} style={styles.tagBox}>
-                                <Text style={styles.tagText}>{tag}</Text>
-                            </View>
-                        ))}
-                    </View>
-                )}
+        <View style={styles.card}>
+            <Text style={styles.dateText}>{item.createdAt ? formatDate(item.createdAt) : "日付不明"}</Text>
+            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+            <View style={styles.tagsColumn}>
+                {item.tags.map(({ english, japanese }, index) => (
+                <View key={index} style={styles.tagRow}>
+                    <Text style={styles.english}>{english}：</Text>
+                    <Text style={styles.japanese}>{japanese}</Text>
+                </View>
+                ))}
             </View>
         </View>
     );
@@ -75,7 +77,7 @@ export default function MemoriesScreen() {
     }
 
     if (!currentUserId) {
-         return <View style={styles.centered}><Text>Please log in to see your memories.</Text></View>;
+         return <View style={styles.centered}><Text>Please login to see your memories.</Text></View>;
     }
     
     if (images.length === 0) {
@@ -88,7 +90,7 @@ export default function MemoriesScreen() {
             <FlatList
                 data={images}
                 keyExtractor={(item) => item.id} // FirestoreドキュメントIDをキーに
-                numColumns={2}
+                numColumns={1}
                 renderItem={renderItem}
                 contentContainerStyle={styles.list}
             />
@@ -103,15 +105,56 @@ const styles = StyleSheet.create({ // スタイル定義は既存のものを流
         justifyContent: 'center',
         alignItems: 'center',
     },
+    card: {
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        padding: 16,
+        marginVertical: 12,
+        marginHorizontal: 16,
+        // iOS shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        // Android shadow
+        elevation: 3,
+        alignItems: "center",
+      },
+      cardImage: {
+        width: "80%",
+        aspectRatio: 1,
+        borderRadius: 12,
+        marginBottom: 12,
+      },
+      dateText: {
+        fontSize: 20,
+        color: "#666",
+        marginBottom: 16,
+        textAlign: "center",
+      },
+      tagsColumn: {
+        width: "100%",
+      },
+      tagRow: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginBottom: 8,
+      },
+      english: {
+        fontWeight: "bold",
+        fontSize: 18,
+        color: "#222",
+      },
+      japanese: {
+        fontSize: 18,
+        color: "#555",
+        marginLeft: 6,
+      },
     // 他のスタイル (imageContainer, image, captionContainer, etc.) は前のコードを参照
     container: { flex: 1, padding: 8, },
     title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16, textAlign: 'center', },
     list: { paddingHorizontal: 8, },
     imageContainer: { margin: 8, borderRadius: 8, overflow: 'hidden', backgroundColor: '#eee' },
-    image: { width: imageSize, height: imageSize, resizeMode: 'cover', },
-    captionContainer: { padding: 8, backgroundColor: 'rgba(0, 0, 0, 0.7)', },
-    captionText: { color: 'white', fontSize: 12, marginBottom: 4, },
-    tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, },
-    tagBox: { backgroundColor: '#1e88e5', paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4, },
-    tagText: { color: 'white', fontSize: 10, },
+    itemContainer: { marginVertical: 12, paddingHorizontal: 16, alignItems: "center" },
+    image: { width: "100%", aspectRatio: 1, borderRadius: 12, marginBottom: 8 },
 });

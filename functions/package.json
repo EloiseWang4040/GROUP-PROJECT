@@ -10,9 +10,9 @@
     "logs": "firebase functions:log"
   },
   "engines": {
-    "node": "22"
+    "node": "20"
   },
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "dependencies": {
     "cors": "^2.8.5",
     "firebase-admin": "^12.6.0",
