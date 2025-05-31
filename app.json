@@ -43,15 +43,18 @@
       ],
       "expo-notifications",
       "expo-build-properties",
-      {
-        "ios": {
-          "infoPlist": {
-            "NSAppTransportSecurity": {
-              "NSAllowsArbitraryLoads": true
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "infoPlist": {
+              "NSAppTransportSecurity": {
+                "NSAllowsArbitraryLoads": true
+              }
             }
           }
         }
-      }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
