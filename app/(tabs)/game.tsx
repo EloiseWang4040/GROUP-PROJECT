@@ -31,6 +31,7 @@ export default function GameScreen () {
   const [score, setScore] = useState(0)
   const [quizData, setQuizData] = useState<QuizItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [feedback, setFeedback] = useState<string | null>(null)
   
   const shuffle = <T,>(array: T[]): T[] => {
     const result = [...array]
@@ -66,21 +67,30 @@ export default function GameScreen () {
 
 
   const generateQuizData = (userImages: FirestoreImageInfo[]): QuizItem[] => {
-    return userImages.flatMap(image =>
+    const quizItems = userImages.flatMap(image =>
       image.tags.map(tag => ({
         img: image.imageUrl,
         words: shuffle([tag.english, ...(tag.distractors || [])]).slice(0, 4),
-        answer: tag.english,
+        answer: tag.english
       }))
     )
+    return shuffle(quizItems) // ← ここで全体をシャッフル！
   }
 
   const handleSelect = (word: string) => {
     const correct = quizData[currentIndex].answer
+  
     if (word === correct) {
-      setScore(score + 30)
+      setScore(prev => prev + 10)
+      setFeedback('✅ Correct! +10 points')
+    } else {
+      setFeedback(`❌ Incorrect! Correct answer: ${correct}`)
     }
-    setCurrentIndex(currentIndex + 1)
+  
+    setTimeout(() => {
+      setFeedback(null)
+      setCurrentIndex(prev => prev + 1)
+    }, 1000)
   }
 
   const restart = () => {
@@ -96,7 +106,12 @@ export default function GameScreen () {
     return (
       <View style={styles.container}>
         <Text style={styles.resultTitle}>All done!</Text>
-        <Text style={styles.score}>Your Score: {score} / 100</Text>
+        <Text style={styles.score}>
+          Your Score: {score}
+        </Text>
+        <Text style={styles.score}>
+          Accuracy: {Math.round(score / (quizData.length * 10) * 100)}%
+        </Text>
         <TouchableOpacity style={styles.restartButton} onPress={restart}>
           <Text style={styles.restartText}>Restart</Text>
         </TouchableOpacity>
@@ -113,6 +128,16 @@ export default function GameScreen () {
         <Text style={styles.questionCount}>
           Question {currentIndex + 1} / {quizData.length}
         </Text>
+        {feedback && (
+        <Text style={{
+          fontSize: 18,
+          color: feedback.startsWith('✅') ? 'green' : 'red',
+          marginBottom: 10,
+          textAlign: 'center'
+        }}>
+          {feedback}
+        </Text>
+      )}
         <FlatList
           data={question.words}
           keyExtractor={(item) => item}
